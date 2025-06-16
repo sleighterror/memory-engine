@@ -35,21 +35,23 @@ The goal isn’t to simulate the human brain, but to explore how **computation, 
 
 ## 📦 Example API Usage
 
-```json
+```
 POST /experience
 {
   "content": "Saw a red bird",
   "context": {"location": "forest", "mood": "calm"},
   "emotional_weight": 0.7
 }
-```json
+```
+```
 POST /recall
 {
   "cue_context": {"location": "forest"}
 }
-```bash
+```
+```
 GET /memories
-
+```
 🔭 Future Directions
 Integration with wearable sensors (environment-driven encoding)
 
@@ -69,4 +71,4 @@ This is a speculative project. Some features are experimental, and the science i
 
 Let memory be living code.
 
-— Zach G ✶
+— Zach G ✶  with GPT collaboration.
