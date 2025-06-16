@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory Engine</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+    textarea, input { width: 100%; padding: 10px; margin-top: 10px; }
+    button { padding: 10px 20px; margin-top: 10px; }
+    .memory { background: white; margin-top: 10px; padding: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .memory span { display: block; font-size: 0.8em; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Memory Engine Interface</h1>
+
+  <h2>Add Experience</h2>
+  <textarea id="content" placeholder="What happened?"></textarea>
+  <input id="context" placeholder='Context (JSON format: {"location":"home", "mood":"curious"})' />
+  <input id="emotion" type="number" step="0.1" min="0" max="1" value="0.5" />
+  <button onclick="addExperience()">Save Experience</button>
+
+  <h2>Recall Memories</h2>
+  <input id="recall-context" placeholder='Cue Context (JSON format: {"location":"home"})' />
+  <button onclick="recallMemories()">Recall</button>
+
+  <h2>Sleep Cycle</h2>
+  <button onclick="sleepCycle()">Run Sleep Cycle</button>
+
+  <h2>All Memories</h2>
+  <button onclick="loadMemories()">Refresh Memories</button>
+  <div id="memories"></div>
+
+  <script>
+    const api = (path, method = 'GET', body = null) => {
+      return fetch(`http://localhost:5000${path}`, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: body ? JSON.stringify(body) : null
+      }).then(res => res.json());
+    };
+
+    function addExperience() {
+      const content = document.getElementById('content').value;
+      const context = JSON.parse(document.getElementById('context').value || '{}');
+      const emotional_weight = parseFloat(document.getElementById('emotion').value);
+      api('/experience', 'POST', { content, context, emotional_weight }).then(loadMemories);
+    }
+
+    function recallMemories() {
+      const cue_context = JSON.parse(document.getElementById('recall-context').value || '{}');
+      api('/recall', 'POST', { cue_context }).then(displayMemories);
+    }
+
+    function sleepCycle() {
+      api('/sleep', 'POST').then(() => loadMemories());
+    }
+
+    function loadMemories() {
+      api('/memories').then(displayMemories);
+    }
+
+    function displayMemories(memories) {
+      const container = document.getElementById('memories');
+      container.innerHTML = '';
+      memories.forEach(mem => {
+        const div = document.createElement('div');
+        div.className = 'memory';
+        div.innerHTML = `<strong>${mem.content}</strong>
+          <span>Recall: ${mem.recall_strength.toFixed(2)} | Emotion: ${mem.emotional_weight} | Short Term: ${mem.short_term}</span>
+          <span>Context: ${JSON.stringify(mem.context)}</span>`;
+        container.appendChild(div);
+      });
+    }
+
+    loadMemories();
+  </script>
+</body>
+</html>
